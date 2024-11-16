@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multilingual Speech Q&A System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .recording {
+            background-color: #ffebee;
+        }
+        .text-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            min-height: 50px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kannada Speech Q&A System</h1>
+    <button id="startBtn">Start Recording</button>
+    <button id="stopBtn" disabled>Stop Recording</button>
+    <div id="status">Ready to record...</div>
+    <div>
+        <h3>Recognized Speech (Kannada):</h3>
+        <div id="kannadaText" class="text-box"></div>
+        <h3>English Translation:</h3>
+        <div id="englishText" class="text-box"></div>
+        <h3>AI Response (English):</h3>
+        <div id="aiResponse" class="text-box"></div>
+        <h3>AI Response (Kannada):</h3>
+        <div id="kannadaResponse" class="text-box"></div>
+    </div>
+
+    <script>
+        class SpeechProcessor {
+            constructor() {
+                this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                this.synthesis = window.speechSynthesis;
+                this.setupRecognition();
+                this.setupButtons();
+                this.isRecording = false;
+                this.apiUrl = 'http://localhost:5000'; // Python backend URL
+            }
+
+            setupRecognition() {
+                this.recognition.continuous = true; // Changed to true for continuous recording
+                this.recognition.interimResults = true; // Changed to true to get interim results
+                this.recognition.lang = 'kn-IN';
+                
+                let finalTranscript = '';
+                
+                this.recognition.onresult = async (event) => {
+                    let interimTranscript = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+                    
+                    // Show the current transcription (both final and interim)
+                    document.getElementById('kannadaText').textContent = finalTranscript + interimTranscript;
+                    
+                    // Only process the text when we have a final result
+                    if (event.results[event.results.length - 1].isFinal) {
+                        try {
+                            // Translate Kannada to English
+                            const englishText = await this.translateText(finalTranscript, 'kn', 'en');
+                            document.getElementById('englishText').textContent = englishText;
+                            
+                            // Get AI response
+                            const aiResponse = await this.getAIResponse(englishText);
+                            document.getElementById('aiResponse').textContent = aiResponse;
+                            
+                            // Translate AI response back to Kannada
+                            const kannadaResponse = await this.translateText(aiResponse, 'en', 'kn');
+                            document.getElementById('kannadaResponse').textContent = kannadaResponse;
+                            
+                            // Speak the Kannada response
+                            this.speakText(kannadaResponse, 'kn-IN');
+                            
+                            // Reset the final transcript after processing
+                            finalTranscript = '';
+                        } catch (error) {
+                            console.error('Error in processing:', error);
+                            document.getElementById('status').textContent = 'Error: ' + error.message;
+                        }
+                    }
+                };
+
+                this.recognition.onend = () => {
+                    // Restart recognition if still recording
+                    if (this.isRecording) {
+                        this.recognition.start();
+                    }
+                };
+
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    document.getElementById('status').textContent = 'Error: ' + event.error;
+                };
+            }
+
+
+            setupButtons() {
+                const startBtn = document.getElementById('startBtn');
+                const stopBtn = document.getElementById('stopBtn');
+                
+                startBtn.onclick = () => this.startRecording();
+                stopBtn.onclick = () => this.stopRecording();
+            }
+
+            startRecording() {
+                this.recognition.start();
+                this.isRecording = true;
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('status').textContent = 'Recording...';
+                document.getElementById('status').classList.add('recording');
+            }
+
+            stopRecording() {
+                this.recognition.stop();
+                this.isRecording = false;
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('status').textContent = 'Processing...';
+                document.getElementById('status').classList.remove('recording');
+            }
+
+            async translateText(text, fromLang, toLang) {
+                const response = await fetch(`${this.apiUrl}/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        from_lang: fromLang,
+                        to_lang: toLang
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                return data.translatedText;
+            }
+
+            async getAIResponse(question) {
+                const response = await fetch(`${this.apiUrl}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                return data.response;
+            }
+
+            speakText(text, lang) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.onend = () => {
+                    document.getElementById('status').textContent = 'Ready to record...';
+                };
+                this.synthesis.speak(utterance);
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
+                return;
+            }
+            new SpeechProcessor();
+        });
+    </script>
+</body>
+</html>

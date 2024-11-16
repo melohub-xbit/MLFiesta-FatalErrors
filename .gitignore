@@ -1,0 +1,6 @@
+.env
+__pycache__
+.venv
+downloaded_models
+fine_tuned_gpt2
+training_data
