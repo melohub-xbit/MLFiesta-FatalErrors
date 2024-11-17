@@ -12,7 +12,6 @@ import StopIcon from '@mui/icons-material/Stop';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
-// REACT_APP_API_URL
 
 const TextBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -116,6 +115,9 @@ const SpeechPanel = () => {
               text: finalTranscript,
               from_lang: 'kn',
               to_lang: 'en'
+            }).catch(error => {
+              console.error('Error translating to English:', error);
+              throw error;
             });
             textForAI = englishResponse.data.translatedText;
             setTexts(prev => ({
