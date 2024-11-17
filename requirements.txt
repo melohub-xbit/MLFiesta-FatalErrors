@@ -14,4 +14,3 @@ pandas
 transformers
 datasets
 torch
-gunicorn
