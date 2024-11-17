@@ -56,10 +56,12 @@ Chandana is live and accessible at: [Chandana](https://ml-fiesta-fatal-errors.ve
 
 ### Installation (to run locally or use the deployed frontend link to use our application)
 #### Please make sure to run the backend locally before running the frontend, and enter the API keys in the .env file
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/melohub-xbit/MLFiesta-FatalErrors
 ```
+#### Navigate to the folder named MLFiesta-FatalErrors and continuee with the steps below
 2. Install backend dependencies:
 ```bash
 pip install -r requirements.txt
