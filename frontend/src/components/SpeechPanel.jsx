@@ -11,6 +11,8 @@ import MicIcon from '@mui/icons-material/Mic';
 import StopIcon from '@mui/icons-material/Stop';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const TextBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   marginTop: theme.spacing(1),
@@ -109,7 +111,7 @@ const SpeechPanel = () => {
           let textForAI = finalTranscript;
 
           if (isKannada) {
-            const englishResponse = await axios.post('http://localhost:5000/translate', {
+            const englishResponse = await axios.post('${API_URL}/translate', {
               text: finalTranscript,
               from_lang: 'kn',
               to_lang: 'en'
@@ -121,11 +123,11 @@ const SpeechPanel = () => {
             }));
           }
 
-          const aiResponse = await axios.post('http://localhost:5000/generate', {
+          const aiResponse = await axios.post('${API_URL}/generate', {
             question: textForAI
           });
           
-          const kannadaResponse = await axios.post('http://localhost:5000/translate', {
+          const kannadaResponse = await axios.post('${API_URL}/translate', {
             text: aiResponse.data.response,
             from_lang: 'en',
             to_lang: 'kn'
