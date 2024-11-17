@@ -15,6 +15,7 @@ import axios from 'axios';
 import WaveSurfer from 'wavesurfer.js';
 
 const API_URL = process.env.REACT_APP_API_URL;
+console.log('API_URL:', API_URL);
 
 const TextBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
