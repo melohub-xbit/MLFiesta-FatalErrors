@@ -79,7 +79,7 @@ npm install
 ### Running the Application
 1. Start the backend server:
 ```bash
-gunicorn --bind 0.0.0.0:10000 main:app
+python main.py
 ```
 2. Start the frontend server:
 ```bash
