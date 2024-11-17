@@ -111,7 +111,7 @@ const SpeechPanel = () => {
           let textForAI = finalTranscript;
 
           if (isKannada) {
-            const englishResponse = await axios.post('${API_URL}/translate', {
+            const englishResponse = await axios.post(`${API_URL}/translate`, {
               text: finalTranscript,
               from_lang: 'kn',
               to_lang: 'en'
@@ -123,11 +123,11 @@ const SpeechPanel = () => {
             }));
           }
 
-          const aiResponse = await axios.post('${API_URL}/generate', {
+          const aiResponse = await axios.post(`${API_URL}/generate`, {
             question: textForAI
           });
           
-          const kannadaResponse = await axios.post('${API_URL}/translate', {
+          const kannadaResponse = await axios.post(`${API_URL}/translate`, {
             text: aiResponse.data.response,
             from_lang: 'en',
             to_lang: 'kn'
