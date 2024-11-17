@@ -11,7 +11,8 @@ import MicIcon from '@mui/icons-material/Mic';
 import StopIcon from '@mui/icons-material/Stop';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.REACT_APP_API_URL;
+// REACT_APP_API_URL
 
 const TextBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
