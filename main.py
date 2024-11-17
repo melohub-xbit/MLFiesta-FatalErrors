@@ -9,7 +9,6 @@ import torch
 import os
 import json
 import torch
-import torchaudio
 import soundfile as sf
 import numpy as np
 import pandas as pd
