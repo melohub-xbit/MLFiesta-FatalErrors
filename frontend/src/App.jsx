@@ -6,7 +6,8 @@ import {
   Box,
   Typography,
   IconButton,
-  Link
+  Link,
+  Paper
 } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import { Brightness4, Brightness7 } from '@mui/icons-material';
@@ -16,6 +17,7 @@ import SpeechPanel from './components/SpeechPanel';
 
 const App = () => {
   const [mode, setMode] = useState('dark');
+  const [audioUrl, setAudioUrl] = useState(null);
 
   const theme = createTheme({
     palette: {
@@ -78,7 +80,51 @@ const App = () => {
                 {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
               </IconButton>
             </Box>
-            <SpeechPanel />
+            <SpeechPanel setAudioUrl={setAudioUrl} />
+
+            {/* New Audio Player Box */}
+            {audioUrl && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Paper
+                  elevation={3}
+                  sx={{
+                    mt: 3,
+                    p: 2,
+                    borderRadius: 2,
+                    background: theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.divider}`
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Audio Playback
+                  </Typography>
+                  <Box
+                    component="audio"
+                    controls
+                    sx={{
+                      width: '100%',
+                      '&::-webkit-media-controls-panel': {
+                        backgroundColor: theme.palette.background.default
+                      },
+                      '&::-webkit-media-controls-play-button': {
+                        backgroundColor: theme.palette.primary.main,
+                        borderRadius: '50%'
+                      },
+                      '&::-webkit-media-controls-timeline': {
+                        backgroundColor: theme.palette.primary.main
+                      }
+                    }}
+                  >
+                    <source src={audioUrl} type="audio/wav" />
+                    Your browser does not support the audio element.
+                  </Box>
+                </Paper>
+              </motion.div>
+            )}
           </motion.div>
         </Box>
       </Container>

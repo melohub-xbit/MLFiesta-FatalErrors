@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Button,
   Box,
   Paper,
   Typography,
   Alert,
+  IconButton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import MicIcon from '@mui/icons-material/Mic';
 import StopIcon from '@mui/icons-material/Stop';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import axios from 'axios';
+import WaveSurfer from 'wavesurfer.js';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -24,6 +27,25 @@ const TextBox = styled(Paper)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: theme.shadows[4],
+  },
+}));
+
+const TextBoxContainer = styled(Box)({
+  position: 'relative',
+  width: '100%',
+});
+
+const PlayButton = styled(IconButton)(({ theme }) => ({
+  position: 'absolute',
+  bottom: 8,
+  right: 8,
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
+  '&:hover': {
+    backgroundColor: theme.palette.primary.dark,
+  },
+  '&.MuiIconButton-root': {
+    padding: 8,
   },
 }));
 
@@ -59,9 +81,15 @@ const SpinningCircle = styled('span')({
 const SpeechPanel = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [status, setStatus] = useState('Ready to record...');
   const [recognition, setRecognition] = useState(null);
   const [currentLanguage, setCurrentLanguage] = useState('kn-IN');
+  const [retrievedAudioUrl, setRetrievedAudioUrl] = useState('');
+  const [waveform, setWaveform] = useState(null);
+  const waveformRef = useRef(null);
+  const containerRef = useRef(null);
+  const [isWaveformReady, setIsWaveformReady] = useState(false);
   const [texts, setTexts] = useState({
     kannada: '',
     english: '',
@@ -97,60 +125,69 @@ const SpeechPanel = () => {
 
       const isKannada = currentLanguage === 'kn-IN';
       
-      setTexts(prev => ({
-        ...prev,
-        kannada: isKannada ? finalTranscript + interimTranscript : '',
-        english: !isKannada ? finalTranscript + interimTranscript : ''
-      }));
-
       if (event.results[event.results.length - 1].isFinal) {
         try {
           setIsProcessing(true);
           setStatus('Processing...');
 
-          let textForAI = finalTranscript;
+          let kannadaText = '';
+          let englishText = '';
 
           if (isKannada) {
+            kannadaText = finalTranscript;
             const englishResponse = await axios.post(`${API_URL}/translate`, {
               text: finalTranscript,
               from_lang: 'kn',
               to_lang: 'en'
-            }).catch(error => {
-              console.error('Error translating to English:', error);
-              throw error;
             });
-            textForAI = englishResponse.data.translatedText;
-            setTexts(prev => ({
-              ...prev,
-              english: englishResponse.data.translatedText
-            }));
+            englishText = englishResponse.data.translatedText;
+          } else {
+            englishText = finalTranscript;
+            const kannadaResponse = await axios.post(`${API_URL}/translate`, {
+              text: finalTranscript,
+              from_lang: 'en',
+              to_lang: 'kn'
+            });
+            kannadaText = kannadaResponse.data.translatedText;
           }
 
+          setTexts(prev => ({
+            ...prev,
+            kannada: kannadaText,
+            english: englishText
+          }));
+
           const aiResponse = await axios.post(`${API_URL}/generate`, {
-            question: textForAI
+            question: englishText
           });
-          
-          const kannadaResponse = await axios.post(`${API_URL}/translate`, {
+
+          const kannadaAIResponse = await axios.post(`${API_URL}/translate`, {
             text: aiResponse.data.response,
             from_lang: 'en',
             to_lang: 'kn'
           });
 
+          const retrieveResponse = await axios.post(`${API_URL}/retrieve`, {
+            text: kannadaText
+          });
+
+        //   console.log('Retrieve Response:', retrieveResponse.data.best_match_path);
+
+          if (retrieveResponse.data.best_match_path) {
+            // Construct full URL to audio file
+            const audioUrl = `${API_URL}/audio/${retrieveResponse.data.best_match_path.split('\\').pop()}`;
+            setRetrievedAudioUrl(audioUrl);
+          }
+        //   console.log('Retrieved Audio URL:', retrieveResponse.data.best_match_path);
+
           setTexts(prev => ({
             ...prev,
             aiResponse: aiResponse.data.response,
-            kannadaResponse: kannadaResponse.data.translatedText
+            kannadaResponse: kannadaAIResponse.data.translatedText
           }));
 
           setStatus('Done');
           setIsProcessing(false);
-
-          const utterance = new SpeechSynthesisUtterance(kannadaResponse.data.translatedText);
-          utterance.lang = 'kn-IN';
-          utterance.onend = () => {
-            setStatus('Ready to record...');
-          };
-          window.speechSynthesis.speak(utterance);
 
         } catch (error) {
           console.error('Error:', error);
@@ -175,6 +212,39 @@ const SpeechPanel = () => {
     };
   }, [isRecording, currentLanguage]);
 
+  useEffect(() => {
+    if (retrievedAudioUrl && containerRef.current && !waveform) {
+      const wavesurfer = WaveSurfer.create({
+        container: containerRef.current,
+        waveColor: '#4a9eff',
+        progressColor: '#1976d2',
+        height: 80,
+        responsive: true,
+        cursorWidth: 1,
+        cursorColor: '#1976d2',
+        barWidth: 2,
+        barRadius: 3,
+        barGap: 3,
+      });
+  
+      wavesurfer.on('error', err => {
+        console.error('WaveSurfer error:', err);
+      });
+  
+      wavesurfer.load(retrievedAudioUrl);
+      
+      wavesurfer.on('ready', () => {
+        // console.log('WaveSurfer is ready to play');
+        setIsWaveformReady(true);
+        });
+  
+      setWaveform(wavesurfer);
+  
+      return () => wavesurfer.destroy();
+    }
+  }, [retrievedAudioUrl]);
+  
+
   const startRecording = () => {
     setIsRecording(true);
     setStatus('Recording...');
@@ -185,6 +255,21 @@ const SpeechPanel = () => {
     setIsRecording(false);
     setStatus('Processing...');
     recognition.stop();
+  };
+
+  const playText = (text, language) => {
+    if (isPlaying) {
+      window.speechSynthesis.cancel();
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language;
+    utterance.onstart = () => setIsPlaying(true);
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setStatus('Ready to record...');
+    };
+    window.speechSynthesis.speak(utterance);
   };
 
   return (
@@ -273,33 +358,69 @@ const SpeechPanel = () => {
         gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }
       }}>
         {[
-          { title: 'Recognized Speech (Kannada)', content: texts.kannada },
-          { title: 'Recognized Speech (English)', content: texts.english },
-          { title: 'AI Response (English)', content: texts.aiResponse },
-          { title: 'AI Response (Kannada)', content: texts.kannadaResponse }
+          { title: 'Recognized Speech (Kannada)', content: texts.kannada, lang: 'kn-IN' },
+          { title: 'Recognized Speech (English)', content: texts.english, lang: 'en-US' },
+          { title: 'AI Response (English)', content: texts.aiResponse, lang: 'en-US' },
+          { title: 'AI Response (Kannada)', content: texts.kannadaResponse, lang: 'kn-IN' }
         ].map((item, index) => (
           <Box key={index}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mb: 1,
-                fontSize: { xs: '1rem', sm: '1.25rem' }
-              }}>
+            <Typography variant="h6" sx={{ mb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               {item.title}
             </Typography>
-            <TextBox 
-              elevation={1}
-              sx={{
+            <TextBoxContainer>
+              <TextBox elevation={1} sx={{
                 p: { xs: 2, sm: 3 },
                 minHeight: { xs: '80px', sm: '100px' },
                 fontSize: { xs: '0.9rem', sm: '1rem' }
-              }}
-            >
-              {item.content}
-            </TextBox>
+              }}>
+                {item.content}
+              </TextBox>
+              {item.content && (
+                <PlayButton
+                  onClick={() => playText(item.content, item.lang)}
+                  disabled={isPlaying}
+                  size="small"
+                >
+                  <PlayArrowIcon fontSize="small" />
+                </PlayButton>
+              )}
+            </TextBoxContainer>
           </Box>
         ))}
       </Box>
+
+      <Box sx={{ 
+        mt: 3, 
+        p: 3, 
+        bgcolor: 'background.paper', 
+        borderRadius: 2,
+        boxShadow: 1
+        }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+            Retrieved Similar Audio
+        </Typography>
+        <Box ref={containerRef} sx={{ mb: 2 }} />
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <Button 
+                variant="contained"
+                onClick={() => waveform && waveform.isReady && waveform.playPause()}
+                startIcon={<PlayArrowIcon />}
+                disabled={!waveform || !waveform.isReady}
+            >
+                Play/Pause
+            </Button>
+            <Button 
+                variant="outlined"
+                onClick={() => waveform && waveform.isReady && waveform.stop()}
+                startIcon={<StopIcon />}
+                disabled={!waveform || !waveform.isReady}
+            >
+                Stop
+            </Button>
+        </Box>
+
+        </Box>
+
     </Box>
   );
 };
