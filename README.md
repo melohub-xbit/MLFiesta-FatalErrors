@@ -6,8 +6,6 @@ Chandana is a powerful application that combines translation capabilities with a
 
 # MLFiesta - AI-Powered Translation and Q&A System
 
-[![Deploy Status](https://img.shields.io/badge/backend-render-brightgreen)](https://mlfiesta-fatalerrors.onrender.com)
-[![Frontend](https://img.shields.io/badge/frontend-vercel-blue)](https://ml-fiesta-fatal-errors.vercel.app/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![React](https://img.shields.io/badge/react-18.0+-61DAFB.svg)](https://reactjs.org/)
@@ -21,14 +19,10 @@ Chandana is a powerful application that combines translation capabilities with a
 ## Team Details
 - **Team Name**: FatalErrors
 - **Team Members**:
-  - [Krishna Sai](https://github.com/melohub-xbit/melohub-xbit)
-  - [Ramya Parsania](https://github.com/RAMYA-PARSANIA/RAMYA-PARSANIA)
+  - [Krishna Sai](https://github.com/melohub-xbit)
+  - [Ramya Parsania](https://github.com/RAMYA-PARSANIA)
   - [Sarthak Maheshwari](https://github.com/SartMa)
 
-## Live Demo
-- Frontend: [https://ml-fiesta-fatal-errors.vercel.app/](https://ml-fiesta-fatal-errors.vercel.app/)
-- Backend API: [https://mlfiesta-fatalerrors.onrender.com](https://mlfiesta-fatalerrors.onrender.com)
-#### Note: Open the frontend link to access the application.
 ## Features
 
 - **Translation Service**: Supports multiple language translation using Google Translator
@@ -85,7 +79,7 @@ npm install
 ### Running the Application
 1. Start the backend server:
 ```bash
-python main.py
+gunicorn --bind 0.0.0.0:10000 main:app
 ```
 2. Start the frontend server:
 ```bash
