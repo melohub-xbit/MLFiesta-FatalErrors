@@ -67,7 +67,7 @@ const App = () => {
                   textAlign: { xs: 'center', sm: 'left' }
                 }}
               >
-                Kannada Speech Q&A
+                Chandana
               </Typography>
               <IconButton
                 onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
