@@ -5,7 +5,6 @@ from deep_translator import GoogleTranslator
 import dotenv
 from qa_system_v2 import EnhancedQASystem
 import os
-import datetime
 
 dotenv.load_dotenv()
 
@@ -29,8 +28,7 @@ translation_system = TranslationSystem()
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat()
+        "status": "healthy"
     }), 200
 
 @app.route('/translate', methods=['POST'])
