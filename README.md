@@ -2,11 +2,7 @@
 
 Chandana is a powerful application that combines translation capabilities with an intelligent question-answering system. It features a Flask backend API and a React frontend interface.
 
-# MLFiesta - AI-Powered Translation and Q&A System
 
-# MLFiesta - AI-Powered Translation and Q&A System
-
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![React](https://img.shields.io/badge/react-18.0+-61DAFB.svg)](https://reactjs.org/)
 [![Flask](https://img.shields.io/badge/flask-2.0+-black.svg)](https://flask.palletsprojects.com/)
@@ -14,6 +10,10 @@ Chandana is a powerful application that combines translation capabilities with a
 [![Groq](https://img.shields.io/badge/Groq-LLaMA3-orange.svg)](https://groq.com/)
 [![SentenceTransformers](https://img.shields.io/badge/SentenceTransformers-2.0+-red.svg)](https://www.sbert.net/)
 [![Material UI](https://img.shields.io/badge/Material_UI-5.0+-0081CB.svg)](https://mui.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-success)](https://ml-fiesta-fatal-errors.vercel.app/)
+
+## Deployment
+Chandana is live and accessible at: [Chandana](https://ml-fiesta-fatal-errors.vercel.app/)
 
 
 ## Team Details
@@ -55,7 +55,7 @@ Chandana is a powerful application that combines translation capabilities with a
 - Environment variables set up
 
 ### Installation (to run locally or use the deployed frontend link to use our application)
-
+#### Please make sure to run the backend locally before running the frontend, and enter the API keys in the .env file
 1. Clone the repository:
 ```bash
 git clone https://github.com/melohub-xbit/MLFiesta-FatalErrors
@@ -70,7 +70,7 @@ GROQ_API_KEY=your_groq_api_key
 HUGGINGFACE_TOKEN=your_huggingface_token
 ```
 
-4. Install frontend dependencies:
+4. Install frontend dependencies (or use the deployed frontend link to use our application):
 ```bash
 cd frontend
 npm install
@@ -81,7 +81,7 @@ npm install
 ```bash
 python main.py
 ```
-2. Start the frontend server:
+2. Start the frontend server (no need to do this if using the deployed frontend link):
 ```bash
 cd frontend
 npm start
