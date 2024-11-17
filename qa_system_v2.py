@@ -50,9 +50,9 @@ class EnhancedQASystem:
 
     Context: {context}
 
-    Please provide a well-structured answer using the information from the context. Also refine the answer based on your knowledge on the query."""
+    Please provide a well-structured answer using the information from the context. Also refine the answer based on your knowledge on the query, answer very briefly, don't use any irrelevant details and answer only the asked question concisely, but properly."""
         else:
-            prompt = f"""Please answer this question based on your general knowledge:
+            prompt = f"""Please answer this question based on your general knowledge, answer very briefly, don't use any irrelevant details and answer only the asked question concisely, but properly.:
 
     Question: {question}"""
 
