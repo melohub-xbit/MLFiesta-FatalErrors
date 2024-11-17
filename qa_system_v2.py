@@ -50,7 +50,7 @@ class EnhancedQASystem:
 
     Context: {context}
 
-    Please provide a well-structured answer using the information from the context."""
+    Please provide a well-structured answer using the information from the context. Also refine the answer based on your knowledge on the query."""
         else:
             prompt = f"""Please answer this question based on your general knowledge:
 
