@@ -17,7 +17,7 @@ Chandana is live and accessible at: [Chandana](https://ml-fiesta-fatal-errors.ve
 
 
 ## Team Details
-- **Team Name**: FatalErrors
+- **Team Name**: ramyaparsania4
 - **Team Members**:
   - [Krishna Sai](https://github.com/melohub-xbit)
   - [Ramya Parsania](https://github.com/RAMYA-PARSANIA)
